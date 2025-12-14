@@ -1,0 +1,10 @@
+export { auth as middleware } from "./src/auth";
+
+export const config = {
+  matcher: [
+    "/dashboard/:path*",
+    "/transactions/:path*",
+    "/loans/:path*",
+    "/settings/:path*",
+  ],
+};

@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionCategory {
+  SALARY
+  HOUSING
+  GROCERIES
+  TRANSPORT
+  UTILITIES
+  ENTERTAINMENT
+  LOAN_PAYMENT
+  OTHER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  currency     String   @default("MNT")
+  salaryAmount Decimal  @db.Decimal(12, 2) @default(0)
+  payday15     Boolean  @default(false)
+  payday30     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  transactions Transaction[]
+  loans        Loan[]
+}
+
+model Transaction {
+  id         String              @id @default(cuid())
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  type       TransactionType
+  category   TransactionCategory
+  amount     Decimal             @db.Decimal(12, 2)
+  note       String?
+  occurredAt DateTime
+  loan       Loan?               @relation(fields: [loanId], references: [id], onDelete: SetNull)
+  loanId     String?
+  createdAt  DateTime            @default(now())
+
+  @@index([userId, occurredAt])
+}
+
+model Loan {
+  id            String        @id @default(cuid())
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  name          String
+  principal     Decimal       @db.Decimal(12, 2)
+  interestRate  Decimal?      @db.Decimal(5, 2)
+  startDate     DateTime
+  repaymentDay  Int
+  notes         String?
+  createdAt     DateTime      @default(now())
+
+  payments      LoanPayment[]
+  transactions  Transaction[]
+
+  @@index([userId])
+}
+
+model LoanPayment {
+  id        String   @id @default(cuid())
+  loan      Loan     @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId    String
+  amount    Decimal  @db.Decimal(12, 2)
+  paidAt    DateTime
+  createdAt DateTime @default(now())
+
+  @@index([loanId, paidAt])
+}
