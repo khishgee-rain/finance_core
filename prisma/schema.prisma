@@ -56,19 +56,21 @@ model Transaction {
 }
 
 model Loan {
-  id            String        @id @default(cuid())
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  name          String
-  principal     Decimal       @db.Decimal(12, 2)
-  interestRate  Decimal?      @db.Decimal(5, 2)
-  startDate     DateTime
-  repaymentDay  Int
-  notes         String?
-  createdAt     DateTime      @default(now())
+  id               String        @id @default(cuid())
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String
+  name             String
+  principal        Decimal       @db.Decimal(12, 2)
+  interestRate     Decimal?      @db.Decimal(5, 2)
+  startDate        DateTime
+  repaymentDay     Int
+  paymentInterval  Int           @default(15)
+  installments     Int           @default(4)
+  notes            String?
+  createdAt        DateTime      @default(now())
 
-  payments      LoanPayment[]
-  transactions  Transaction[]
+  payments         LoanPayment[]
+  transactions     Transaction[]
 
   @@index([userId])
 }

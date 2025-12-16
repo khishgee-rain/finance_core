@@ -54,6 +54,47 @@ export function CreateLoanForm() {
           />
         </div>
       </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-1">
+          <label className="text-sm font-medium" htmlFor="paymentInterval">
+            Төлбөрийн давтамж (хоног)
+          </label>
+          <select
+            id="paymentInterval"
+            name="paymentInterval"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            defaultValue="15"
+          >
+            <option value="7">7 хоног тутам</option>
+            <option value="10">10 хоног тутам</option>
+            <option value="15">15 хоног тутам</option>
+            <option value="30">30 хоног тутам</option>
+            <option value="60">60 хоног тутам</option>
+            <option value="90">90 хоног тутам</option>
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm font-medium" htmlFor="installments">
+            Хэдэн хэсэгт хуваах
+          </label>
+          <select
+            id="installments"
+            name="installments"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            defaultValue="4"
+          >
+            <option value="2">2 хэсэг</option>
+            <option value="3">3 хэсэг</option>
+            <option value="4">4 хэсэг</option>
+            <option value="5">5 хэсэг</option>
+            <option value="6">6 хэсэг</option>
+            <option value="8">8 хэсэг</option>
+            <option value="10">10 хэсэг</option>
+            <option value="12">12 хэсэг</option>
+            <option value="24">24 хэсэг</option>
+          </select>
+        </div>
+      </div>
       <div className="space-y-1">
         <label className="text-sm font-medium" htmlFor="notes">
           Тэмдэглэл

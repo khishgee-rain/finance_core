@@ -124,12 +124,13 @@ export async function createTransactionAction(
     type: formData.get("type"),
     amount: formData.get("amount"),
     category: formData.get("category"),
-    note: formData.get("note"),
+    note: formData.get("note") || undefined,
     occurredAt: formData.get("occurredAt"),
     loanId: formData.get("loanId") || undefined,
   });
 
   if (!parsed.success) {
+    console.error("Validation error:", parsed.error.flatten());
     return { error: "Гүйлгээний мэдээлэл буруу байна." };
   }
 
@@ -186,6 +187,8 @@ export async function createLoanAction(
     interestRate: z.coerce.number().nonnegative().max(100).optional(),
     startDate: z.coerce.date(),
     repaymentDay: z.coerce.number().int().min(1).max(31),
+    paymentInterval: z.coerce.number().int().positive().optional(),
+    installments: z.coerce.number().int().positive().optional(),
     notes: z.string().max(240).optional(),
   });
 
@@ -195,6 +198,8 @@ export async function createLoanAction(
     interestRate: formData.get("interestRate"),
     startDate: formData.get("startDate"),
     repaymentDay: formData.get("repaymentDay"),
+    paymentInterval: formData.get("paymentInterval"),
+    installments: formData.get("installments"),
     notes: formData.get("notes"),
   });
 
@@ -210,6 +215,8 @@ export async function createLoanAction(
       interestRate: parsed.data.interestRate ?? null,
       startDate: parsed.data.startDate,
       repaymentDay: parsed.data.repaymentDay,
+      paymentInterval: parsed.data.paymentInterval ?? 15,
+      installments: parsed.data.installments ?? 4,
       notes: parsed.data.notes,
     },
   });

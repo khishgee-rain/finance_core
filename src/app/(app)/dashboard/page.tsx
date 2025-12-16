@@ -5,9 +5,10 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { displayCategory, formatCurrency, formatDate } from "@/lib/format";
-import { getDashboardData, getMonthRange } from "@/lib/data";
+import { getDashboardData, getLoans, getMonthRange } from "@/lib/data";
 import { GenerateSalaryButton } from "@/components/dashboard/generate-salary";
-import { ensureSalaryForCurrentMonth } from "@/lib/salary";
+import { AddQuickTransaction } from "@/components/dashboard/add-quick-transaction";
+import { AddTransactionModal } from "@/components/transactions/add-transaction";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -27,7 +28,11 @@ export default async function DashboardPage({ searchParams }: DashboardProps) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  await ensureSalaryForCurrentMonth(session.user.id);
+  const loans = await getLoans(session.user.id);
+  const loanOptions = loans.map((loan: any) => ({
+    id: loan.id,
+    name: loan.name,
+  }));
 
   const currency = session.user.currency || "MNT";
 
@@ -37,13 +42,15 @@ export default async function DashboardPage({ searchParams }: DashboardProps) {
     : {};
 
   const monthParam = pickFirst(sp.month);
+  const periodParam = pickFirst(sp.period);
+  const activePeriod = periodParam || "default";
 
-  const monthRange = getMonthRange(monthParam);
+  const monthRange = getMonthRange(monthParam, periodParam);
 
   // input type="month" заавал YYYY-MM
   const monthValue =
     typeof monthRange?.label === "string" &&
-    /^\d{4}-\d{2}$/.test(monthRange.label)
+      /^\d{4}-\d{2}$/.test(monthRange.label)
       ? monthRange.label
       : new Date().toISOString().slice(0, 7);
 
@@ -52,33 +59,97 @@ export default async function DashboardPage({ searchParams }: DashboardProps) {
       ? monthRange.label
       : monthValue;
 
-  const data = await getDashboardData(session.user.id, monthParam);
+  const data = await getDashboardData(session.user.id, monthParam, periodParam);
 
   const maxValue = Math.max(data.totals.income, data.totals.expense, 1);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-foreground/60">
-            {monthLabel}
-          </p>
-          <h1 className="text-3xl font-semibold">Самбар</h1>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-foreground/60">
+                {monthLabel}
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-semibold">Самбар</h1>
+            </div>
+
+            <form className="flex items-center gap-2 w-full sm:w-auto" method="get">
+              <input
+                type="month"
+                name="month"
+                defaultValue={monthValue}
+                className="flex-1 sm:flex-none rounded-full border border-stroke bg-white px-3 py-2 text-sm min-w-[160px]"
+              />
+              <Button variant="ghost" type="submit">
+                Шүүх
+              </Button>
+            </form>
+          </div>
+
+          {/* Quick Filter Pills */}
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="?period=today"
+              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${activePeriod === "today"
+                ? "border-primary bg-primary text-white"
+                : "border-stroke bg-white hover:bg-muted"
+                }`}
+            >
+              🕐 Өнөөдөр
+            </Link>
+            <Link
+              href="?period=3days"
+              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${activePeriod === "3days"
+                ? "border-primary bg-primary text-white"
+                : "border-stroke bg-white hover:bg-muted"
+                }`}
+            >
+              📆 3 хоног
+            </Link>
+            <Link
+              href="?period=7days"
+              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${activePeriod === "7days"
+                ? "border-primary bg-primary text-white"
+                : "border-stroke bg-white hover:bg-muted"
+                }`}
+            >
+              📅 7 хоног
+            </Link>
+            <Link
+              href="?period=1month"
+              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${activePeriod === "1month"
+                ? "border-primary bg-primary text-white"
+                : "border-stroke bg-white hover:bg-muted"
+                }`}
+            >
+              📊 1 сар
+            </Link>
+            <Link
+              href="?period=3months"
+              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${activePeriod === "3months"
+                ? "border-primary bg-primary text-white"
+                : "border-stroke bg-white hover:bg-muted"
+                }`}
+            >
+              📈 3 сар
+            </Link>
+            <Link
+              href="/dashboard"
+              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${activePeriod === "default"
+                ? "border-primary bg-primary text-white"
+                : "border-stroke bg-white hover:bg-muted"
+                }`}
+            >
+              🔄 Бүгд
+            </Link>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <form className="flex items-center gap-2" method="get">
-            <input
-              type="month"
-              name="month"
-              defaultValue={monthValue}
-              className="w-full rounded-full border border-stroke bg-white px-3 py-2 text-sm"
-            />
-            <Button variant="ghost" type="submit">
-              Шүүх
-            </Button>
-          </form>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AddQuickTransaction />
+          <AddTransactionModal loans={loanOptions} />
           <GenerateSalaryButton />
         </div>
       </div>
@@ -192,7 +263,7 @@ export default async function DashboardPage({ searchParams }: DashboardProps) {
                         width: `${Math.min(
                           100,
                           (loan.paid / Math.max(Number(loan.principal), 1)) *
-                            100
+                          100
                         )}%`,
                       }}
                     />

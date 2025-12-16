@@ -1,4 +1,4 @@
-import { addMonths, endOfMonth, startOfMonth } from "date-fns";
+import { addMonths, endOfMonth, startOfMonth, subDays } from "date-fns";
 import { prisma } from "./prisma";
 
 function normalizeMonthParam(value?: string | string[] | null) {
@@ -8,8 +8,43 @@ function normalizeMonthParam(value?: string | string[] | null) {
   return raw;
 }
 
-export function getMonthRange(monthParam?: string | string[] | null) {
+function normalizePeriodParam(value?: string | string[] | null) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return typeof raw === "string" ? raw : undefined;
+}
+
+export function getMonthRange(monthParam?: string | string[] | null, periodParam?: string | string[] | null) {
   const now = new Date();
+  const period = normalizePeriodParam(periodParam);
+
+  // Quick period filters
+  if (period) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let start = today;
+    const nextMonth = new Date();
+    nextMonth.setDate(nextMonth.getDate() + 1);
+    nextMonth.setHours(0, 0, 0, 0);
+
+    switch (period) {
+      case "today":
+        return { start: today, end: today, label: "Өнөөдөр", nextMonth };
+      case "3days":
+        start = subDays(today, 2);
+        return { start, end: today, label: "Сүүлийн 3 хоног", nextMonth };
+      case "7days":
+        start = subDays(today, 6);
+        return { start, end: today, label: "Сүүлийн 7 хоног", nextMonth };
+      case "1month":
+        start = subDays(today, 29);
+        return { start, end: today, label: "Сүүлийн 30 хоног", nextMonth };
+      case "3months":
+        start = subDays(today, 89);
+        return { start, end: today, label: "Сүүлийн 3 сар", nextMonth };
+    }
+  }
+
+  // Month-based filter
   let year = now.getFullYear();
   let month = now.getMonth();
 
@@ -31,8 +66,8 @@ export function getMonthRange(monthParam?: string | string[] | null) {
   return { start, end, label, nextMonth };
 }
 
-export async function getDashboardData(userId: string, monthParam?: string | string[] | null) {
-  const { start, nextMonth, label } = getMonthRange(monthParam);
+export async function getDashboardData(userId: string, monthParam?: string | string[] | null, periodParam?: string | string[] | null) {
+  const { start, nextMonth, label } = getMonthRange(monthParam, periodParam);
 
   const [incomeAgg, expenseAgg, recentTransactions, monthTransactions, loans] = await Promise.all([
     prisma.transaction.aggregate({

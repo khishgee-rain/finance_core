@@ -14,7 +14,19 @@ const initialState = { error: "", success: "" };
 
 type LoanOption = { id: string; name: string };
 
-export function AddTransactionModal({ loans }: { loans: LoanOption[] }) {
+interface AddTransactionModalProps {
+  loans: LoanOption[];
+  defaultType?: "INCOME" | "EXPENSE";
+  buttonLabel?: string;
+  buttonVariant?: "primary" | "secondary" | "ghost";
+}
+
+export function AddTransactionModal({
+  loans,
+  defaultType = TRANSACTION_TYPES[0],
+  buttonLabel = "Гүйлгээ нэмэх",
+  buttonVariant = "primary"
+}: AddTransactionModalProps) {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(createTransactionAction, initialState);
 
@@ -29,7 +41,7 @@ export function AddTransactionModal({ loans }: { loans: LoanOption[] }) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Гүйлгээ нэмэх</Button>
+      <Button onClick={() => setOpen(true)} variant={buttonVariant} className="w-full px-6 py-3 text-base font-semibold">{buttonLabel}</Button>
       <Modal open={open} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
         <form action={handleAction} className="space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -37,7 +49,7 @@ export function AddTransactionModal({ loans }: { loans: LoanOption[] }) {
               <label className="text-sm font-medium" htmlFor="type">
                 Төрөл
               </label>
-              <Select id="type" name="type" defaultValue={TRANSACTION_TYPES[0]}>
+              <Select id="type" name="type" defaultValue={defaultType}>
                 {TRANSACTION_TYPES.map((type) => {
                   const label = type === "INCOME" ? "Орлого" : "Зарлага";
                   return (
