@@ -27,11 +27,11 @@ export default async function LoanDetailPage({ params }: { params: { id: string 
         </div>
       </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_0.9fr]">
-            <Card className="space-y-3">
-              <h2 className="text-lg font-semibold">Төлөв</h2>
-              <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-                <div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[1.1fr_0.9fr]">
+        <Card className="space-y-3">
+          <h2 className="text-lg font-semibold">Төлөв</h2>
+          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+            <div>
               <p className="text-foreground/60">Үндсэн</p>
               <p className="font-semibold">
                 {formatCurrency(Number(detail.loan.principal), currency)}
@@ -66,26 +66,28 @@ export default async function LoanDetailPage({ params }: { params: { id: string 
               }}
             />
           </div>
-            </Card>
+        </Card>
 
-            <Card>
-              <h2 className="text-lg font-semibold">Төлбөр нэмэх</h2>
-              <p className="text-sm text-foreground/60">Төлбөр бүр зарлага гүйлгээнд бүртгэгдэнэ.</p>
-              <div className="mt-3">
-                <PaymentForm loanId={detail.loan.id} />
-              </div>
-            </Card>
+        <Card>
+          <h2 className="text-lg font-semibold">Төлбөр нэмэх</h2>
+          <p className="text-sm text-foreground/60">Төлбөр бүр зарлага гүйлгээнд бүртгэгдэнэ.</p>
+          <div className="mt-3">
+            <PaymentForm loanId={detail.loan.id} />
           </div>
+        </Card>
+      </div>
 
-          <Card>
-            <RepaymentPlan
-              startDate={new Date(detail.loan.startDate)}
-              outstanding={detail.outstanding}
-              currency={currency}
-              paymentInterval={detail.loan.paymentInterval}
-              defaultCount={detail.loan.installments}
-            />
-          </Card>
+      <Card>
+        {detail.loan && (
+          <RepaymentPlan
+            startDate={new Date(detail.loan.startDate)}
+            outstanding={detail.outstanding}
+            currency={currency}
+            paymentInterval={(detail.loan as any).paymentInterval || 15}
+            defaultCount={(detail.loan as any).installments || 4}
+          />
+        )}
+      </Card>
 
       <Card>
         <h2 className="text-lg font-semibold">Төлбөрийн түүх</h2>
