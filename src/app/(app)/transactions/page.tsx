@@ -43,7 +43,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams?
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-foreground/60">Гүйлгээ</p>
+          <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Гүйлгээ</p>
           <h1 className="text-3xl font-semibold">Бүх хөдөлгөөн</h1>
         </div>
         <AddTransactionModal loans={loanOptions} />
@@ -60,7 +60,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams?
               type="month"
               name="month"
               defaultValue={label}
-              className="rounded-full border border-stroke bg-white px-3 py-2 text-sm"
+              className="rounded-full border border-stroke bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div className="space-y-1">
@@ -71,7 +71,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams?
               id="type"
               name="type"
               defaultValue={typeFilter ?? ""}
-              className="rounded-full border border-stroke bg-white px-3 py-2 text-sm"
+              className="rounded-full border border-stroke bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
             >
               <option value="">Бүгд</option>
               {TRANSACTION_TYPES.map((type) => {
@@ -84,7 +84,7 @@ export default async function TransactionsPage({ searchParams }: { searchParams?
               })}
             </select>
           </div>
-          <Button type="submit" variant="ghost">
+          <Button type="submit" variant="secondary">
             Шүүх
           </Button>
         </form>
@@ -93,21 +93,21 @@ export default async function TransactionsPage({ searchParams }: { searchParams?
       <div className="space-y-3">
         {transactions.length === 0 ? (
           <Card>
-            <p className="text-sm text-foreground/60">Энэ шүүлтүүртэй гүйлгээ алга.</p>
+            <p className="text-sm text-slate-400">Энэ шүүлтүүртэй гүйлгээ алга.</p>
           </Card>
         ) : (
           transactions.map((txn) => (
-            <Card key={txn.id} className="flex items-center justify-between">
+            <Card key={txn.id} className="flex items-center justify-between transition hover:-translate-y-[1px]">
               <div>
                 <p className="text-sm font-semibold">{displayCategory(txn.category)}</p>
-                <p className="text-xs text-foreground/60">
+                <p className="text-xs text-slate-400">
                   {formatDate(new Date(txn.occurredAt))} • {txn.type === "INCOME" ? "Орлого" : "Зарлага"}
                 </p>
                 {txn.note ? (
-                  <p className="text-xs text-foreground/60">Тэмдэглэл: {txn.note}</p>
+                  <p className="text-xs text-slate-400">Тэмдэглэл: {txn.note}</p>
                 ) : null}
               </div>
-              <p className="text-sm font-semibold">
+              <p className={`text-sm font-semibold ${txn.type === "EXPENSE" ? "text-rose-500" : "text-emerald-600"}`}>
                 {txn.type === "EXPENSE" ? "-" : "+"}
                 {formatCurrency(Number(txn.amount), currency)}
               </p>

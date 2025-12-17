@@ -21,7 +21,7 @@ const config: Config = {
         mono: ["var(--font-mono)", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
-        card: "0 10px 30px rgba(0, 0, 0, 0.05)",
+        card: "0 20px 60px rgba(0, 0, 0, 0.25)",
       },
     },
   },

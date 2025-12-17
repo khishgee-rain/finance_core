@@ -29,7 +29,7 @@ export function LoginForm() {
       <Button type="submit" className="w-full">
         Нэвтрэх
       </Button>
-      <p className="text-sm text-foreground/70">
+      <p className="text-sm text-slate-400">
         Бүртгэлгүй юу?{" "}
         <Link href="/register" className="underline">
           Бүртгүүлэх

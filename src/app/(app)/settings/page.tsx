@@ -14,9 +14,9 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-sm uppercase tracking-[0.3em] text-foreground/60">Тохиргоо</p>
+        <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Тохиргоо</p>
         <h1 className="text-3xl font-semibold">Профайл ба цалин</h1>
-        <p className="text-sm text-foreground/60">Валют, цалин, цалингийн өдрөө тохируулна.</p>
+        <p className="text-sm text-slate-500">Валют, цалин, цалингийн өдрөө тохируулна.</p>
       </div>
 
       <Card>
@@ -31,7 +31,7 @@ export default async function SettingsPage() {
       </Card>
       <Card>
         <h2 className="text-lg font-semibold">Цалингийн бодлого</h2>
-        <p className="text-sm text-foreground/70">
+        <p className="text-sm text-slate-600">
           Цалин нь самбар дээр автоматаар баталгаажна (эсвэл товчоор дахин идэвхжүүлж болно). Сонгосон
           сард 15, 30-нд орлого гүйлгээ хэлбэрээр нэмэгдэнэ; давхардахгүй.
         </p>

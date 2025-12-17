@@ -63,7 +63,7 @@ export function RegisterForm() {
       <Button type="submit" className="w-full">
         Бүртгэл үүсгэх
       </Button>
-      <p className="text-sm text-foreground/70">
+      <p className="text-sm text-slate-400">
         Аль хэдийн бүртгэлтэй юу?{" "}
         <Link href="/login" className="underline">
           Нэвтрэх

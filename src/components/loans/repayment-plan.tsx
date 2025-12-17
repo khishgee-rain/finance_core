@@ -47,10 +47,10 @@ export function RepaymentPlan({ startDate, outstanding, currency, defaultCount, 
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Төлбөрийн хуваарь ({paymentInterval} хоног)</h3>
-        <label className="text-xs text-foreground/70 flex items-center gap-2">
+        <label className="text-xs text-slate-400 flex items-center gap-2">
           Хэдэд хуваах:
           <select
-            className="rounded-full border border-stroke bg-white px-2 py-1 text-xs"
+            className="rounded-full border border-white/15 bg-neutral-900 px-2 py-1 text-xs text-slate-100 focus:border-primary focus:ring-2 focus:ring-primary/30"
             value={count}
             onChange={(e) => setCount(Number(e.target.value))}
           >
@@ -63,8 +63,8 @@ export function RepaymentPlan({ startDate, outstanding, currency, defaultCount, 
         </label>
       </div>
 
-      <div className="rounded-xl border border-stroke bg-white">
-        <div className="grid grid-cols-3 border-b border-stroke px-3 py-2 text-xs font-medium text-foreground/60">
+      <div className="rounded-xl border border-white/10 bg-neutral-900/80 text-slate-100 shadow-card">
+        <div className="grid grid-cols-3 border-b border-white/10 px-3 py-2 text-xs font-medium text-slate-400">
           <span>Хэсэг</span>
           <span>Огноо</span>
           <span className="text-right">Дүн</span>

@@ -12,114 +12,113 @@ import { Modal } from "../ui/modal";
 const initialState = { error: "", success: "" };
 
 export function AddQuickTransaction() {
-    const [open, setOpen] = useState(false);
-    const [state, formAction] = useActionState(createTransactionAction, initialState);
+  const [open, setOpen] = useState(false);
+  const [state, formAction] = useActionState(createTransactionAction, initialState);
 
-    // Close modal and reset on success
-    useEffect(() => {
-        if (state.success) {
-            setOpen(false);
-        }
-    }, [state.success]);
+  // Close modal and reset on success
+  useEffect(() => {
+    if (state.success) {
+      setOpen(false);
+    }
+  }, [state.success]);
 
-    const handleAction = async (formData: FormData) => {
-        // Create new FormData with all required fields
-        const data = new FormData();
+  const handleAction = async (formData: FormData) => {
+    // Create new FormData with all required fields
+    const data = new FormData();
 
-        data.append("type", formData.get("type") as string);
-        data.append("amount", formData.get("amount") as string);
-        data.append("category", formData.get("category") as string);
-        data.append("occurredAt", new Date().toISOString().split("T")[0]);
+    data.append("type", formData.get("type") as string);
+    data.append("amount", formData.get("amount") as string);
+    data.append("category", formData.get("category") as string);
+    data.append("occurredAt", new Date().toISOString().split("T")[0]);
 
-        const note = formData.get("note");
-        if (note) {
-            data.append("note", note as string);
-        }
+    const note = formData.get("note");
+    if (note) {
+      data.append("note", note as string);
+    }
 
-        return formAction(data);
-    };
+    return formAction(data);
+  };
 
-    return (
-        <>
-            <Button onClick={() => setOpen(true)} variant="secondary" className="w-full px-6 py-3 text-base font-semibold">
-                + Гүйлгээ нэмэх
-            </Button>
-            <Modal open={open} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
-                <form action={handleAction} className="space-y-5">
-                    {/* Step 1: Төрөл */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-white text-xs">1</span>
-                            Төрөл сонгох
-                        </label>
-                        <Select id="type" name="type" defaultValue="INCOME">
-                            {TRANSACTION_TYPES.map((type) => {
-                                const label = type === "INCOME" ? "💰 Орлого" : "💸 Зарлага";
-                                return (
-                                    <option key={type} value={type}>
-                                        {label}
-                                    </option>
-                                );
-                            })}
-                        </Select>
-                    </div>
+  return (
+    <>
+      <Button onClick={() => setOpen(true)} variant="primary" className="w-full px-6 py-3 text-base font-semibold">
+        + Гүйлгээ нэмэх
+      </Button>
+      <Modal open={open} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
+        <form action={handleAction} className="space-y-5">
+          {/* Step 1: Төрөл */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-white text-xs">1</span>
+              Төрөл сонгох
+            </label>
+            <Select id="type" name="type" defaultValue="INCOME">
+              {TRANSACTION_TYPES.map((type) => {
+                const label = type === "INCOME" ? "💰 Орлого" : "💸 Зарлага";
+                return (
+                  <option key={type} value={type}>
+                    {label}
+                  </option>
+                );
+              })}
+            </Select>
+          </div>
 
-                    {/* Step 2: Дүн */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground/80 flex items-center gap-2" htmlFor="amount">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-white text-xs">2</span>
-                            Дүн оруулах
-                        </label>
-                        <Input
-                            id="amount"
-                            name="amount"
-                            type="number"
-                            placeholder="0.00"
-                            min={0}
-                            step="0.01"
-                            required
-                            autoFocus
-                            className="text-lg"
-                        />
-                    </div>
+          {/* Step 2: Дүн */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-200 flex items-center gap-2" htmlFor="amount">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-white text-xs">2</span>
+              Дүн оруулах
+            </label>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              placeholder="0.00"
+              min={0}
+              step="0.01"
+              required
+              autoFocus
+              className="text-lg"
+            />
+          </div>
 
-                    {/* Step 3: Ангилал */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground/80 flex items-center gap-2" htmlFor="category">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-white text-xs">3</span>
-                            Ангилал сонгох
-                        </label>
-                        <Select id="category" name="category" defaultValue="OTHER">
-                            {TRANSACTION_CATEGORIES.map((category) => (
-                                <option key={category} value={category}>
-                                    {displayCategory(category)}
-                                </option>
-                            ))}
-                        </Select>
-                    </div>
+          {/* Step 3: Ангилал */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-200 flex items-center gap-2" htmlFor="category">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-white text-xs">3</span>
+              Ангилал сонгох
+            </label>
+            <Select id="category" name="category" defaultValue="OTHER">
+              {TRANSACTION_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {displayCategory(category)}
+                </option>
+              ))}
+            </Select>
+          </div>
 
-                    {/* Step 4: Тэмдэглэл */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground/80 flex items-center gap-2" htmlFor="note">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-foreground/60 text-white text-xs">4</span>
-                            Тэмдэглэл (сонголтоор)
-                        </label>
-                        <Input
-                            id="note"
-                            name="note"
-                            type="text"
-                            placeholder="Жишээ: Хоол хүнс, Такси зардал..."
-                        />
-                    </div>
+          {/* Step 4: Тэмдэглэл */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-200 flex items-center gap-2" htmlFor="note">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-700 text-white text-xs">4</span>
+              Тэмдэглэл (сонголтоор)
+            </label>
+            <Input
+              id="note"
+              name="note"
+              type="text"
+              placeholder="Жишээ: Хоол хүнс, Такси зардал..."
+            />
+          </div>
 
-                    {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+          {state.error && <p className="text-sm text-rose-400">{state.error}</p>}
 
-                    <Button type="submit" className="w-full text-base py-3">
-                        ✓ Хадгалах
-                    </Button>
-                </form>
-            </Modal>
-        </>
-    );
+          <Button type="submit" className="w-full text-base py-3">
+            ✓ Хадгалах
+          </Button>
+        </form>
+      </Modal>
+    </>
+  );
 }
-
