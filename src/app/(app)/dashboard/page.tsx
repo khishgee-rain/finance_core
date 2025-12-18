@@ -2,28 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { displayCategory, formatCurrency, formatDate } from "@/lib/format";
-import { getDashboardData, getLoans, getMonthRange } from "@/lib/data";
+import { getDashboardData, getLoans } from "@/lib/data";
 import { GenerateSalaryButton } from "@/components/dashboard/generate-salary";
+import { AddQuickTransaction } from "@/components/dashboard/add-quick-transaction";
 import { AddTransactionModal } from "@/components/transactions/add-transaction";
 
-type SearchParams = Record<string, string | string[] | undefined>;
-
-interface DashboardProps {
-  searchParams?: unknown; // ✅ юу ч байж магадгүй гэж үзнэ
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function pickFirst(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-export default async function DashboardPage({ searchParams }: DashboardProps) {
+export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
@@ -35,30 +21,7 @@ export default async function DashboardPage({ searchParams }: DashboardProps) {
 
   const currency = session.user.currency || "MNT";
 
-  // ✅ searchParams-аа object мөн эсэхээр нь хамгаалж байна
-  const sp: SearchParams = isPlainObject(searchParams)
-    ? (searchParams as SearchParams)
-    : {};
-
-  const monthParam = pickFirst(sp.month);
-  const periodParam = pickFirst(sp.period);
-  const activePeriod = periodParam || "default";
-
-  const monthRange = getMonthRange(monthParam, periodParam);
-
-  // input type="month" заавал YYYY-MM
-  const monthValue =
-    typeof monthRange?.label === "string" &&
-    /^\d{4}-\d{2}$/.test(monthRange.label)
-      ? monthRange.label
-      : new Date().toISOString().slice(0, 7);
-
-  const monthLabel =
-    typeof monthRange?.label === "string" && monthRange.label.length > 0
-      ? monthRange.label
-      : monthValue;
-
-  const data = await getDashboardData(session.user.id, monthParam, periodParam);
+  const data = await getDashboardData(session.user.id);
 
   const maxValue = Math.max(data.totals.income, data.totals.expense, 1);
 
@@ -69,93 +32,15 @@ export default async function DashboardPage({ searchParams }: DashboardProps) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-white/70">
-                {monthLabel}
+                {data.monthLabel}
               </p>
               <h1 className="text-2xl sm:text-3xl font-semibold">Самбар</h1>
             </div>
-
-            <form
-              className="flex items-center gap-2 w-full sm:w-auto"
-              method="get"
-            >
-              <input
-                type="month"
-                name="month"
-                defaultValue={monthValue}
-                className="flex-1 sm:flex-none rounded-full border border-stroke bg-white px-3 py-2 text-sm min-w-[160px]"
-              />
-              <Button variant="secondary" type="submit">
-                Шүүх
-              </Button>
-            </form>
-          </div>
-
-          {/* Quick Filter Pills */}
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="?period=today"
-              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${
-                activePeriod === "today"
-                  ? "border-primary bg-primary text-white"
-                  : "border-white/10 bg-neutral-900 text-white hover:border-primary/60 hover:bg-neutral-800"
-              }`}
-            >
-              🕐 Өнөөдөр
-            </Link>
-            <Link
-              href="?period=3days"
-              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${
-                activePeriod === "3days"
-                  ? "border-primary bg-primary text-white"
-                  : "border-white/10 bg-neutral-900 text-white hover:border-primary/60 hover:bg-neutral-800"
-              }`}
-            >
-              📆 3 хоног
-            </Link>
-            <Link
-              href="?period=7days"
-              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${
-                activePeriod === "7days"
-                  ? "border-primary bg-primary text-white"
-                  : "border-white/10 bg-neutral-900 text-white hover:border-primary/60 hover:bg-neutral-800"
-              }`}
-            >
-              📅 7 хоног
-            </Link>
-            <Link
-              href="?period=1month"
-              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${
-                activePeriod === "1month"
-                  ? "border-primary bg-primary text-white"
-                  : "border-white/10 bg-neutral-900 text-white hover:border-primary/60 hover:bg-neutral-800"
-              }`}
-            >
-              📊 1 сар
-            </Link>
-            <Link
-              href="?period=3months"
-              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${
-                activePeriod === "3months"
-                  ? "border-primary bg-primary text-white"
-                  : "border-white/10 bg-neutral-900 text-white hover:border-primary/60 hover:bg-neutral-800"
-              }`}
-            >
-              📈 3 сар
-            </Link>
-            <Link
-              href="/dashboard"
-              className={`px-4 py-2 text-xs font-medium rounded-full border-2 transition ${
-                activePeriod === "default"
-                  ? "border-primary bg-primary text-white"
-                  : "border-white/10 bg-neutral-900 text-white hover:border-primary/60 hover:bg-neutral-800"
-              }`}
-            >
-              🔄 Бүгд
-            </Link>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AddQuickTransaction />
           <AddTransactionModal loans={loanOptions} />
           <GenerateSalaryButton />
         </div>

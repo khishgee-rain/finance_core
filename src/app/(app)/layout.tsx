@@ -11,7 +11,11 @@ const links = [
   { href: "/settings", label: "Тохиргоо" },
 ];
 
-export default async function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const session = await auth();
   if (!session?.user) {
     redirect("/login");
@@ -22,10 +26,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="sticky top-0 z-20 border-b border-white/10 bg-neutral-950/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center justify-between gap-3">
-            <Link href="/dashboard" className="text-lg font-semibold text-white">
-              Энгийн Санхүү
+            <Link
+              href="/dashboard"
+              className="text-lg font-semibold text-white"
+            >
+              Санхүү tracker shit
             </Link>
-            <p className="text-sm text-slate-400">Сайн уу, {session.user.name}</p>
+            <p className="text-sm text-slate-400">
+              Сайн уу, {session.user.name}
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-100">
             {links.map((link) => (

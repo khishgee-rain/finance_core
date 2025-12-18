@@ -41,9 +41,9 @@ export default async function LoansPage() {
                         Эхэлсэн {formatDate(new Date(loan.startDate))} • Төлөх өдөр {loan.repaymentDay}
                       </p>
                     </div>
-                    <Link href={`/loans/${loan.id}`}>
-                      <Button variant="secondary">Дэлгэрэнгүй</Button>
-                    </Link>
+                    <Button asChild variant="secondary">
+                      <Link href={`/loans/${loan.id}`}>Дэлгэрэнгүй</Link>
+                    </Button>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
                     <div>

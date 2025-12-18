@@ -28,12 +28,16 @@ export function AddTransactionModal({
   buttonVariant = "primary"
 }: AddTransactionModalProps) {
   const [open, setOpen] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [state, formAction] = useActionState(createTransactionAction, initialState);
 
   const handleAction = async (formData: FormData) => {
     const result = await formAction(formData);
     if ((result as any)?.success) {
       setOpen(false);
+      setSuccessMessage((result as any).success);
+      setSuccessOpen(true);
     }
   };
 
@@ -104,11 +108,34 @@ export function AddTransactionModal({
             </label>
             <Input id="note" name="note" placeholder="Нэмэлт тэмдэглэл" />
           </div>
-          {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+          {state.error ? <p className="text-sm text-rose-400">{state.error}</p> : null}
           <Button type="submit" className="w-full">
             Хадгалах
           </Button>
         </form>
+      </Modal>
+
+      <Modal
+        open={successOpen}
+        onClose={() => {
+          setSuccessOpen(false);
+          setSuccessMessage("");
+        }}
+        title="Амжилттай"
+      >
+        <p className="text-sm text-slate-300">{successMessage || "Гүйлгээг хадгаллаа."}</p>
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="primary"
+            onClick={() => {
+              setSuccessOpen(false);
+              setSuccessMessage("");
+            }}
+          >
+            OK
+          </Button>
+        </div>
       </Modal>
     </>
   );

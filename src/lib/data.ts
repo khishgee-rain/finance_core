@@ -118,9 +118,13 @@ export async function getDashboardData(userId: string, monthParam?: string | str
 
 export async function getTransactionsData(
   userId: string,
-  opts: { monthParam?: string | string[] | null; type?: "INCOME" | "EXPENSE" }
+  opts: {
+    monthParam?: string | string[] | null;
+    periodParam?: string | string[] | null;
+    type?: "INCOME" | "EXPENSE";
+  }
 ) {
-  const { start, nextMonth, label } = getMonthRange(opts.monthParam);
+  const { start, nextMonth, label } = getMonthRange(opts.monthParam, opts.periodParam);
 
   const where: any = {
     userId,
