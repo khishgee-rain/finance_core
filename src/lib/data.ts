@@ -163,6 +163,7 @@ export async function getLoans(userId: string) {
 }
 
 export async function getLoanDetail(userId: string, loanId: string) {
+  if (!loanId) return null;
   const loan = await prisma.loan.findFirst({
     where: { id: loanId, userId },
     include: {

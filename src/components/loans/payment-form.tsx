@@ -28,7 +28,7 @@ export function PaymentForm({ loanId }: { loanId: string }) {
           <Input id="paidAt" name="paidAt" type="date" defaultValue={today} required />
         </div>
       </div>
-      {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+      {state.error ? <p className="text-sm text-rose-400">{state.error}</p> : null}
       <Button type="submit" className="w-full">
         Төлбөр бүртгэх
       </Button>

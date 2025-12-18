@@ -207,7 +207,7 @@ export async function createLoanAction(
     return { error: "Зээлийн мэдээллээ зөв оруулна уу." };
   }
 
-  await prisma.loan.create({
+  const loan = await prisma.loan.create({
     data: {
       userId: user.id,
       name: parsed.data.name,
@@ -224,7 +224,7 @@ export async function createLoanAction(
   revalidatePath("/loans");
   revalidatePath("/dashboard");
 
-  return { success: "Зээл нэмлээ." };
+  redirect(`/loans/${loan.id}`);
 }
 
 export async function recordPaymentAction(

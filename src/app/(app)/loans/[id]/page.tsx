@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Card } from "@/components/ui/card";
@@ -6,11 +8,16 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { getLoanDetail } from "@/lib/data";
 import { RepaymentPlan } from "@/components/loans/repayment-plan";
 
-export default async function LoanDetailPage({ params }: { params: { id: string } }) {
+export default async function LoanDetailPage({
+  params,
+}: {
+  params: { id: string } | Promise<{ id: string }>;
+}) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const detail = await getLoanDetail(session.user.id, params.id);
+  const { id } = await params;
+  const detail = await getLoanDetail(session.user.id, id);
   if (!detail) notFound();
 
   const currency = session.user.currency || "MNT";

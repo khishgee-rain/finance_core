@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { createLoanAction } from "@/lib/actions";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Select } from "../ui/select";
 
 const initialState = { error: "", success: "" };
 
@@ -59,10 +60,9 @@ export function CreateLoanForm() {
           <label className="text-sm font-medium" htmlFor="paymentInterval">
             Төлбөрийн давтамж (хоног)
           </label>
-          <select
+          <Select
             id="paymentInterval"
             name="paymentInterval"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             defaultValue="15"
           >
             <option value="7">7 хоног тутам</option>
@@ -71,16 +71,15 @@ export function CreateLoanForm() {
             <option value="30">30 хоног тутам</option>
             <option value="60">60 хоног тутам</option>
             <option value="90">90 хоног тутам</option>
-          </select>
+          </Select>
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium" htmlFor="installments">
             Хэдэн хэсэгт хуваах
           </label>
-          <select
+          <Select
             id="installments"
             name="installments"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             defaultValue="4"
           >
             <option value="2">2 хэсэг</option>
@@ -92,7 +91,7 @@ export function CreateLoanForm() {
             <option value="10">10 хэсэг</option>
             <option value="12">12 хэсэг</option>
             <option value="24">24 хэсэг</option>
-          </select>
+          </Select>
         </div>
       </div>
       <div className="space-y-1">
@@ -101,7 +100,7 @@ export function CreateLoanForm() {
         </label>
         <Input id="notes" name="notes" placeholder="Нэмэлт тэмдэглэл" />
       </div>
-      {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+      {state.error ? <p className="text-sm text-rose-400">{state.error}</p> : null}
       <Button type="submit" className="w-full">
         Зээл үүсгэх
       </Button>
