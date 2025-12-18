@@ -1,8 +1,12 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { AddTransactionModal } from "@/components/transactions/add-transaction";
 import { getLoans, getTransactionsData, getMonthRange } from "@/lib/data";
 import { displayCategory, formatCurrency, formatDate } from "@/lib/format";
@@ -12,6 +16,32 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+async function resolveMaybeThenable<T>(value: T): Promise<Awaited<T>> {
+  const candidate = value as any;
+  if (candidate && typeof candidate === "object" && typeof candidate.then === "function") {
+    return candidate;
+  }
+  return value as Awaited<T>;
+}
+
+function readSearchParam(source: unknown, key: string): string | string[] | undefined {
+  if (!source || typeof source !== "object") return undefined;
+  const obj = source as any;
+  if (typeof obj.getAll === "function") {
+    const all = obj.getAll(key);
+    if (Array.isArray(all) && all.length > 1) return all;
+    if (Array.isArray(all) && all.length === 1) return all[0];
+  }
+  if (typeof obj.get === "function") {
+    const value = obj.get(key);
+    return value ?? undefined;
+  }
+  if (isPlainObject(obj)) {
+    return obj[key] as any;
+  }
+  return undefined;
 }
 
 function pickFirst(value: string | string[] | undefined) {
@@ -26,13 +56,14 @@ export default async function TransactionsPage({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const sp: SearchParams = isPlainObject(searchParams)
-    ? (searchParams as SearchParams)
+  const resolvedSearchParams = await resolveMaybeThenable(searchParams);
+  const sp: SearchParams = isPlainObject(resolvedSearchParams)
+    ? (resolvedSearchParams as SearchParams)
     : {};
-  const monthParam = pickFirst(sp.month);
-  const periodParam = pickFirst(sp.period);
+  const monthParam = pickFirst(readSearchParam(sp, "month"));
+  const periodParam = pickFirst(readSearchParam(sp, "period"));
   const activePeriod = periodParam || "default";
-  const typeParam = pickFirst(sp.type);
+  const typeParam = pickFirst(readSearchParam(sp, "type"));
 
   const typeFilter =
     typeParam === "INCOME" || typeParam === "EXPENSE"
@@ -42,9 +73,8 @@ export default async function TransactionsPage({
   const monthRange = getMonthRange(monthParam, periodParam);
   const monthLabel = monthRange.label;
   const monthValue =
-    typeof monthRange.label === "string" &&
-    /^\d{4}-\d{2}$/.test(monthRange.label)
-      ? monthRange.label
+    typeof monthParam === "string" && /^\d{4}-\d{2}$/.test(monthParam)
+      ? monthParam
       : new Date().toISOString().slice(0, 7);
 
   const hrefWith = (next: {
@@ -61,7 +91,7 @@ export default async function TransactionsPage({
     return qs ? `?${qs}` : "/transactions";
   };
 
-  const { transactions } = await getTransactionsData(session.user.id, {
+  const { transactions, totals } = await getTransactionsData(session.user.id, {
     monthParam,
     periodParam,
     type: typeFilter,
@@ -79,7 +109,46 @@ export default async function TransactionsPage({
           </p>
           <h1 className="text-3xl font-semibold">Бүх хөдөлгөөн</h1>
         </div>
-        <AddTransactionModal loans={loanOptions} />
+        <AddTransactionModal
+          loans={loanOptions}
+          buttonClassName="w-auto px-5 py-2 text-sm font-semibold"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <Card className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-slate-400">Орлого</p>
+            <p className="mt-1 text-lg font-semibold text-white">
+              {formatCurrency(totals.income, currency)}
+            </p>
+          </div>
+          <div className="rounded-full border border-white/10 bg-neutral-950/60 px-3 py-1 text-xs text-slate-300">
+            IN
+          </div>
+        </Card>
+        <Card className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-slate-400">Зарлага</p>
+            <p className="mt-1 text-lg font-semibold text-white">
+              {formatCurrency(totals.expense, currency)}
+            </p>
+          </div>
+          <div className="rounded-full border border-white/10 bg-neutral-950/60 px-3 py-1 text-xs text-slate-300">
+            OUT
+          </div>
+        </Card>
+        <Card className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-slate-400">Үлдэгдэл</p>
+            <p className="mt-1 text-lg font-semibold text-white">
+              {formatCurrency(totals.balance, currency)}
+            </p>
+          </div>
+          <div className="rounded-full border border-white/10 bg-neutral-950/60 px-3 py-1 text-xs text-slate-300">
+            NET
+          </div>
+        </Card>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -169,29 +238,33 @@ export default async function TransactionsPage({
         </Link>
       </div>
 
-      {/* <Card>
-        <form className="flex flex-wrap items-end gap-3" action="" method="get">
+      <Card>
+        <form
+          className="grid grid-cols-1 gap-3 sm:grid-cols-[1.2fr_1fr_auto]"
+          action="/transactions"
+          method="get"
+        >
           <div className="space-y-1">
             <label className="text-sm font-medium" htmlFor="month">
               Сар
             </label>
-            <input
+            <Input
               id="month"
               type="month"
               name="month"
               defaultValue={monthValue}
-              className="rounded-full border border-stroke bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="rounded-full bg-neutral-950 text-slate-100 border-white/10 focus:border-primary focus:ring-primary/30"
             />
           </div>
           <div className="space-y-1">
             <label className="text-sm font-medium" htmlFor="type">
               Төрөл
             </label>
-            <select
+            <Select
               id="type"
               name="type"
               defaultValue={typeFilter ?? ""}
-              className="rounded-full border border-stroke bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="rounded-full bg-neutral-950 text-slate-100 border-white/10 focus:border-primary focus:ring-primary/30"
             >
               <option value="">Бүгд</option>
               {TRANSACTION_TYPES.map((type) => {
@@ -202,13 +275,13 @@ export default async function TransactionsPage({
                   </option>
                 );
               })}
-            </select>
+            </Select>
           </div>
-          <Button type="submit" variant="secondary">
+          <Button type="submit" variant="secondary" className="w-fit">
             Шүүх
           </Button>
         </form>
-      </Card> */}
+      </Card>
 
       <div className="space-y-3">
         {transactions.length === 0 ? (

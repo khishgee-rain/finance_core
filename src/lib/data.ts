@@ -134,12 +134,26 @@ export async function getTransactionsData(
     where.type = opts.type;
   }
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    orderBy: { occurredAt: "desc" },
-  });
+  const [transactions, incomeAgg, expenseAgg] = await Promise.all([
+    prisma.transaction.findMany({
+      where,
+      orderBy: { occurredAt: "desc" },
+    }),
+    prisma.transaction.aggregate({
+      where: { userId, type: "INCOME", occurredAt: { gte: start, lt: nextMonth } },
+      _sum: { amount: true },
+    }),
+    prisma.transaction.aggregate({
+      where: { userId, type: "EXPENSE", occurredAt: { gte: start, lt: nextMonth } },
+      _sum: { amount: true },
+    }),
+  ]);
 
-  return { transactions, monthLabel: label };
+  const income = Number(incomeAgg._sum.amount ?? 0);
+  const expense = Number(expenseAgg._sum.amount ?? 0);
+  const balance = income - expense;
+
+  return { transactions, monthLabel: label, totals: { income, expense, balance } };
 }
 
 export async function getUserProfile(userId: string) {

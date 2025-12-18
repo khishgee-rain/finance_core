@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useActionState } from "react";
+import { useRouter } from "next/navigation";
 import { createTransactionAction } from "@/lib/actions";
 import { TRANSACTION_TYPES, TRANSACTION_CATEGORIES } from "@/lib/constants";
 import { displayCategory } from "@/lib/format";
@@ -12,12 +13,13 @@ import { Modal } from "../ui/modal";
 const initialState = { error: "", success: "" };
 
 export function AddQuickTransaction() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successDismissed, setSuccessDismissed] = useState(true);
   const [state, formAction] = useActionState(createTransactionAction, initialState);
 
   const handleAction = async (formData: FormData) => {
+    setSuccessDismissed(false);
     const data = new FormData();
 
     data.append("type", formData.get("type") as string);
@@ -28,31 +30,31 @@ export function AddQuickTransaction() {
     const note = formData.get("note");
     if (note) data.append("note", note as string);
 
-    const result = await formAction(data);
-    if ((result as any)?.success) {
-      setOpen(false);
-      setSuccessMessage((result as any).success);
-      setSuccessOpen(true);
-    }
-    return result;
+    return formAction(data);
   };
 
-  const closeSuccess = () => {
-    setSuccessOpen(false);
-    setSuccessMessage("");
+  const successVisible = Boolean(state.success) && !successDismissed;
+
+  const closeSuccess = async () => {
+    setOpen(false);
+    setSuccessDismissed(true);
+    router.refresh();
   };
 
   return (
     <>
       <Button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setSuccessDismissed(true);
+          setOpen(true);
+        }}
         variant="primary"
         className="w-full px-6 py-3 text-base font-semibold"
       >
         + Гүйлгээ нэмэх
       </Button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
+      <Modal open={open && !successVisible} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
         <form action={handleAction} className="space-y-5">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
@@ -141,8 +143,8 @@ export function AddQuickTransaction() {
         </form>
       </Modal>
 
-      <Modal open={successOpen} onClose={closeSuccess} title="Амжилттай">
-        <p className="text-sm text-slate-300">{successMessage || "Гүйлгээг хадгаллаа."}</p>
+      <Modal open={successVisible} onClose={closeSuccess} title="Амжилттай">
+        <p className="text-sm text-slate-300">{state.success || "Гүйлгээг хадгаллаа."}</p>
         <div className="flex justify-end">
           <Button type="button" variant="primary" onClick={closeSuccess}>
             OK

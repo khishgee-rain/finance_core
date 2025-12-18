@@ -155,10 +155,6 @@ export async function createTransactionAction(
     },
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/transactions");
-  revalidatePath("/loans");
-
   return { success: "Гүйлгээг хадгаллаа." };
 }
 

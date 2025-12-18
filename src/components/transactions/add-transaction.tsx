@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useActionState } from "react";
+import { useRouter } from "next/navigation";
 
 import { createTransactionAction } from "@/lib/actions";
 import { TRANSACTION_CATEGORIES, TRANSACTION_TYPES } from "@/lib/constants";
@@ -9,6 +10,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import { Modal } from "../ui/modal";
+import { cn } from "@/lib/utils";
 
 const initialState = { error: "", success: "" };
 
@@ -19,34 +21,47 @@ interface AddTransactionModalProps {
   defaultType?: "INCOME" | "EXPENSE";
   buttonLabel?: string;
   buttonVariant?: "primary" | "secondary" | "ghost";
+  buttonClassName?: string;
 }
 
 export function AddTransactionModal({
   loans,
   defaultType = TRANSACTION_TYPES[0],
   buttonLabel = "Гүйлгээ нэмэх",
-  buttonVariant = "primary"
+  buttonVariant = "primary",
+  buttonClassName,
 }: AddTransactionModalProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successDismissed, setSuccessDismissed] = useState(true);
   const [state, formAction] = useActionState(createTransactionAction, initialState);
 
   const handleAction = async (formData: FormData) => {
-    const result = await formAction(formData);
-    if ((result as any)?.success) {
-      setOpen(false);
-      setSuccessMessage((result as any).success);
-      setSuccessOpen(true);
-    }
+    setSuccessDismissed(false);
+    return formAction(formData);
   };
 
   const today = new Date().toISOString().split("T")[0];
+  const successVisible = Boolean(state.success) && !successDismissed;
+  const closeSuccess = () => {
+    setOpen(false);
+    setSuccessDismissed(true);
+    router.refresh();
+  };
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} variant={buttonVariant} className="w-full px-6 py-3 text-base font-semibold">{buttonLabel}</Button>
-      <Modal open={open} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
+      <Button
+        onClick={() => {
+          setSuccessDismissed(true);
+          setOpen(true);
+        }}
+        variant={buttonVariant}
+        className={cn("w-full px-6 py-3 text-base font-semibold", buttonClassName)}
+      >
+        {buttonLabel}
+      </Button>
+      <Modal open={open && !successVisible} onClose={() => setOpen(false)} title="Гүйлгээ нэмэх">
         <form action={handleAction} className="space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1">
@@ -115,24 +130,10 @@ export function AddTransactionModal({
         </form>
       </Modal>
 
-      <Modal
-        open={successOpen}
-        onClose={() => {
-          setSuccessOpen(false);
-          setSuccessMessage("");
-        }}
-        title="Амжилттай"
-      >
-        <p className="text-sm text-slate-300">{successMessage || "Гүйлгээг хадгаллаа."}</p>
+      <Modal open={successVisible} onClose={closeSuccess} title="Амжилттай">
+        <p className="text-sm text-slate-300">{state.success || "Гүйлгээг хадгаллаа."}</p>
         <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={() => {
-              setSuccessOpen(false);
-              setSuccessMessage("");
-            }}
-          >
+          <Button type="button" variant="primary" onClick={closeSuccess}>
             OK
           </Button>
         </div>
