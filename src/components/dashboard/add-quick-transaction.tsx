@@ -144,7 +144,10 @@ export function AddQuickTransaction() {
       </Modal>
 
       <Modal open={successVisible} onClose={closeSuccess} title="Амжилттай">
-        <p className="text-sm text-slate-300">{state.success || "Гүйлгээг хадгаллаа."}</p>
+        <div className="flex items-center gap-3">
+          <img src="/favicon.ico" alt="Finance favicon" className="h-10 w-10 rounded" />
+          <p className="text-sm text-slate-300">{state.success || "Гүйлгээг хадгаллаа."}</p>
+        </div>
         <div className="flex justify-end">
           <Button type="button" variant="primary" onClick={closeSuccess}>
             OK

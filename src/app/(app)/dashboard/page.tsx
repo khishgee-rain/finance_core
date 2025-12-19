@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { lastDayOfMonth } from "date-fns";
 
 import { auth } from "@/auth";
 import { Card } from "@/components/ui/card";
@@ -7,7 +8,6 @@ import { displayCategory, formatCurrency, formatDate } from "@/lib/format";
 import { getDashboardData, getLoans } from "@/lib/data";
 import { GenerateSalaryButton } from "@/components/dashboard/generate-salary";
 import { AddQuickTransaction } from "@/components/dashboard/add-quick-transaction";
-import { AddTransactionModal } from "@/components/transactions/add-transaction";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -24,6 +24,15 @@ export default async function DashboardPage() {
   const data = await getDashboardData(session.user.id);
 
   const maxValue = Math.max(data.totals.income, data.totals.expense, 1);
+  const today = new Date();
+  const todayDay = today.getDate();
+  const monthEndDay = lastDayOfMonth(today).getDate();
+
+  const dueLoans = loans.filter(
+    (loan: any) => Math.min(loan.repaymentDay, monthEndDay) === todayDay
+  );
+  const pendingDueLoans = dueLoans.filter((loan: any) => loan.outstanding > 0);
+  const clearedDueLoans = dueLoans.filter((loan: any) => loan.outstanding <= 0);
 
   return (
     <div className="space-y-6">
@@ -39,9 +48,64 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        <Card className="border-sky-500/30 bg-gradient-to-br from-sky-500/15 via-slate-900 to-slate-950 text-white shadow-[0_10px_40px_rgba(56,189,248,0.15)]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.3em] text-sky-100/70">Өнөөдөр</p>
+              <h2 className="text-xl font-semibold">Зээлийн төлбөрийн өдөр</h2>
+              <p className="text-sm text-white/80">
+                {dueLoans.length > 0
+                  ? "Төлөх өдөртэй зээлүүдийн статусыг доор шалгана уу."
+                  : "Өнөөдөр төлөх өдөртэй зээл байхгүй байна."}
+              </p>
+            </div>
+            <Link
+              href="/loans"
+              className="inline-flex items-center justify-center rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25"
+            >
+              Зээлүүд рүү очих
+            </Link>
+          </div>
+
+          {dueLoans.length > 0 ? (
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {pendingDueLoans.map((loan: any) => (
+                <div
+                  key={loan.id}
+                  className="rounded-lg border border-white/10 bg-white/5 p-3 backdrop-blur transition hover:-translate-y-[1px] hover:border-sky-400/60"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">{loan.name}</p>
+                    <span className="rounded-full bg-amber-400/15 px-2 py-1 text-xs font-semibold text-amber-200">
+                      Төлөх
+                    </span>
+                  </div>
+                  <p className="text-xs text-white/70 mt-1">
+                    Үлдэгдэл: {formatCurrency(loan.outstanding, currency)}
+                  </p>
+                </div>
+              ))}
+              {clearedDueLoans.map((loan: any) => (
+                <div
+                  key={loan.id}
+                  className="rounded-lg border border-emerald-400/40 bg-emerald-500/10 p-3 backdrop-blur transition hover:-translate-y-[1px] hover:border-emerald-300/80"
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold">{loan.name}</p>
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs font-semibold text-emerald-100">
+                      100% төлөгдсөн
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-100/80 mt-1">Өнөөдрийн төлбөр амжилттай.</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </Card>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <AddQuickTransaction />
-          <AddTransactionModal loans={loanOptions} />
+          {/* <AddTransactionModal loans={loanOptions} /> */}
           <GenerateSalaryButton />
         </div>
       </div>
